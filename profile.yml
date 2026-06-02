@@ -1,0 +1,38 @@
+der_sp:
+  target: dev
+  outputs:
+    dev:
+      type: athena
+      s3_staging_dir: s3://smm-packt-serverless-analytics/results/dbt/
+      s3_data_dir: s3://smm-packt-serverless-analytics/dbt-data/
+      s3_data_naming: schema_table
+      region_name: us-east-1
+      database: awsdatacatalog
+      schema: dbt_der
+      aws_profile_name: default
+      threads: 4
+      num_retries: 1
+
+    seed:
+      type: athena
+      s3_staging_dir: s3://smm-packt-serverless-analytics/results/dbt/
+      s3_data_dir: s3://der-sp-bucket/raw/
+      s3_data_naming: table
+      region_name: us-east-1
+      database: awsdatacatalog
+      schema: dbt_der
+      aws_profile_name: default
+      threads: 1
+      num_retries: 0
+
+    snapshot:
+      type: athena
+      s3_staging_dir: s3://smm-packt-serverless-analytics/results/dbt/
+      s3_data_dir: s3://der-sp-bucket/snapshot/
+      s3_data_naming: schema_table
+      region_name: us-east-1
+      database: awsdatacatalog
+      schema: dbt_der
+      aws_profile_name: default
+      threads: 1
+      num_retries: 0

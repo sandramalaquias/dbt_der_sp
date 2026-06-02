@@ -1,0 +1,9 @@
+target/
+dbt_packages/
+.venv/
+logs/
+*.pyc
+.env
+files/*.csv
+files/*.parquet
+.idea/

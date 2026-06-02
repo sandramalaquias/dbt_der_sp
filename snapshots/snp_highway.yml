@@ -1,0 +1,58 @@
+version: 2
+
+snapshots:
+  - name: snp_highway
+    description: >
+      SCD Type 2 snapshot of stg_highway tracking changes in jurisdiction,
+      administration, conservation and contract data over time.
+      Each row represents a version of a highway segment, with validity period
+      defined by dbt_valid_from and dbt_valid_to.
+      Used S3 Iceberg standard because dbt don't support s3 table, and has issue opened in gighub
+
+    columns:
+      - name: highway_id
+        description: "Surrogate key from stg_highway (highway_code + km_start)."
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: dbt_scd_id
+        description: "Unique identifier for each snapshot record version."
+
+      - name: dbt_updated_at
+        description: "Timestamp when this snapshot record was last updated."
+
+      - name: dbt_valid_from
+        description: "Timestamp when this version of the record became valid."
+
+      - name: dbt_valid_to
+        description: "Timestamp when this version was superseded. Null = current record."
+
+      - name: jurisdiction
+        description: "Tracked field — entity with jurisdictional authority over this segment."
+
+      - name: administrator
+        description: "Tracked field — entity responsible for administering this segment."
+
+      - name: conservator
+        description: "Tracked field — entity responsible for maintenance and conservation."
+
+      - name: contract_start_date
+        description: "Tracked field — start date of the administration or concession contract."
+
+      - name: contract_end_date
+        description: "Tracked field — end date of the administration or concession contract."
+
+      - name: transfer_law
+        description: "Tracked field — law reference for municipal transfer of administration responsibility."
+
+      - name: dbt_scd_id
+        description: "Unique identifier for each snapshot record version."
+        data_tests:
+            - unique:
+                config:
+                  severity: error
+            - not_null:
+                config:
+                  severity: error

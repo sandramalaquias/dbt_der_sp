@@ -1,0 +1,33 @@
+name: 'der_sp'
+version: '1.0.0'
+config-version: 2
+
+profile: 'der_sp'  # deve bater exatamente com o profiles.yml
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+seed-paths: ["seeds"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+seeds:
+  der_sp:
+    +schema: raw
+    +file_format: parquet
+
+models:
+  der_sp:
+    staging:
+        +materialized: view
+        +schema: staging
+    core:
+        +materialized: view
+        +schema: core
+    marts:
+        +materialized: table
+        +schema: marts
+

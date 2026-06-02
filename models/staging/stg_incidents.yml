@@ -1,0 +1,92 @@
+version: 2
+
+models:
+  - name: stg_incidents
+    description: "Staging table for road incidents on São Paulo state highways. Sourced from DER-SP open data.         
+    Duplicates collapsed using GROUP BY ALL with record count for auditability. 
+    Records with null open_at are excluded as they likely belong to the previous year.
+    Fields with empty value or spaces were changed to null"
+
+    meta:
+      owner: "Data Engineering Team"
+      maintained_by: "Data Engineering Team"
+      maintenance_cadence: "yearly"
+
+    data_tests:
+      - macro_empty_model
+      - raw_assert_incidents_closing_before_opening:
+          config:
+            severity: warn
+            warn_if: ">3"
+            error_if: ">10"
+
+    columns:
+      - name: open_at
+        description: "Date and time when the incident was opened in the system. Records with null open_at are excluded as they likely belong to the previous year."
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: close_at
+        description: "Date and time when the incident was closed in the system. When null, defaults to open_at."
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: highway_code
+        description: "Highway code where the incident occurred."
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: km
+        description: "Kilometer marker where the incident occurred."
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: traffic_direction
+        description: "Traffic direction at the position where the incident occurred."
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: regional_code
+        description: "Code of the regional coordination unit (CGR) where the incident occurred."
+
+      - name: regional_name
+        description: "Name of the regional coordination unit where the incident occurred."
+
+      - name: incident_category
+        description: "First level classification of the incident (Descrição da Ocorrência)."
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: incident_type
+        description: "Second level classification of the incident (Tipo da Ocorrência)."
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: incident_date
+        description: "Date when the incident occurred."
+
+      - name: day_of_week
+        description: "Day of the week when the incident occurred."
+
+      - name: geo_lat
+        description: "Geographic latitude of the incident location."
+
+      - name: geo_lng
+        description: "Geographic longitude of the incident location."
+
+      - name: record_count
+        description: "Number of raw records collapsed into this row. Used for auditability only."
