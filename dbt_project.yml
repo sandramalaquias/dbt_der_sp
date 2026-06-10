@@ -16,7 +16,6 @@ clean-targets: ["target", "dbt_packages"]
 
 seeds:
   der_sp:
-    +schema: raw
     +file_format: parquet
 
 models:

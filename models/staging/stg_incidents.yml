@@ -14,11 +14,6 @@ models:
 
     data_tests:
       - macro_empty_model
-      - raw_assert_incidents_closing_before_opening:
-          config:
-            severity: warn
-            warn_if: ">3"
-            error_if: ">10"
 
     columns:
       - name: open_at

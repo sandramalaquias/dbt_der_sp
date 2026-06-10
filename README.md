@@ -21,7 +21,6 @@ Nos trechos com mais ocorrências, há correlação com mais sinistros com víti
 | fonte | url | formato | descrição |
 |---|---|---|---|
 | ocorrencias | [OCORRENCIAS.zip](https://www.der.sp.gov.br/WebSite/Arquivos/DadosAbertos/Acidentes/Ocorrencias/OCORRENCIAS.zip) | XLSX dentro de ZIP | ocorrências nas rodovias estaduais — 267.883 registros |
-| sinistros | [Sinistros_DER_{ano}.xlsx](https://www.der.sp.gov.br/WebSite/Arquivos/DadosAbertos/Acidentes/Acidentes/Sinistros_DER_2025.xlsx) | XLSX | acidentes com vítimas — 13.599 registros |
 | malha_rodoviaria | [Sistema Rodoviário Estadual.xlsx](https://www.der.sp.gov.br/WebSite/Arquivos/DadosAbertos/MalhaRodoviariaEstadual/MalhaRodoviariaEstadual/Sistema%20Rodovi%C3%A1rio%20Estadual.xlsx) | XLSX | mapeamento rodovia + km → município — 4.583 registros |
 
 #### Notes
@@ -59,14 +58,12 @@ df['dt_partition'] = datetime.now().date()
 df.to_parquet('files/ocorrencias.parquet', index=False)
 "
 ```
----
 
 ## Infraestrutura (Terraform)
 
 ### Storage
 - S3 bucket `der-sp-bucket`
   - `raw/ocorrencias/` — dados brutos convertidos para CSV
-  - `raw/sinistros/` — dados brutos convertidos para CSV
   - `raw/rodovias/` — dados brutos convertidos para CSV
 
 ### Orquestração da Ingestão
@@ -245,3 +242,8 @@ This is a known limitation tracked in [dbt-adapters issue #1186](https://github.
 > - Orphan file removal — removes files no longer referenced by any snapshot  
 
 > These jobs would typically run as scheduled AWS Glue Jobs with PySpark. With S3 Tables, all three are handled automatically by AWS.  
+
+Config Path para Athena
+> s3_staging_dir — em profile para query results do Athena ✅
+> s3_data_dir — em profile para path base para tabelas temporárias (__dbt_tmp) ✅
+> external_location - em model garante que a tabela final vai para o path correto

@@ -20,7 +20,7 @@ der_sp:
       s3_data_naming: table
       region_name: us-east-1
       database: awsdatacatalog
-      schema: dbt_der
+      schema: dbt_der_raw
       aws_profile_name: default
       threads: 1
       num_retries: 0
