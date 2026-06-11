@@ -3,6 +3,9 @@ name: dbt Pipeline
 on:
   pull_request:
     branches: [main]
+  schedule:
+    - cron: '0 11 10 * *'  #10th of each month at 8 AM Brasília time
+  workflow_dispatch:
 
 jobs:
   dbt-build:
