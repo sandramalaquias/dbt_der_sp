@@ -17,12 +17,16 @@ clean-targets: ["target", "dbt_packages"]
 seeds:
   der_sp:
     +file_format: parquet
+    +delimiter: "\t"
 
 models:
   der_sp:
     staging:
         +materialized: view
         +schema: staging
+    dimensions:
+      +materialized: view
+      +schema: dim
     core:
         +materialized: view
         +schema: core

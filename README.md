@@ -18,44 +18,35 @@ Nos trechos com mais ocorrências, há correlação com mais sinistros com víti
 
 ## Fontes de Dados
 
-| fonte | url | formato | descrição |
-|---|---|---|---|
-| ocorrencias | [OCORRENCIAS.zip](https://www.der.sp.gov.br/WebSite/Arquivos/DadosAbertos/Acidentes/Ocorrencias/OCORRENCIAS.zip) | XLSX dentro de ZIP | ocorrências nas rodovias estaduais — 267.883 registros |
-| malha_rodoviaria | [Sistema Rodoviário Estadual.xlsx](https://www.der.sp.gov.br/WebSite/Arquivos/DadosAbertos/MalhaRodoviariaEstadual/MalhaRodoviariaEstadual/Sistema%20Rodovi%C3%A1rio%20Estadual.xlsx) | XLSX | mapeamento rodovia + km → município — 4.583 registros |
+| fonte             | url                                                                                                                                                                     | formato            | descrição                                              |
+|-------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------|--------------------------------------------------------|
+| ocorrencias       | [OCORRENCIAS.zip](https://www.der.sp.gov.br/WebSite/Arquivos/DadosAbertos/Acidentes/Ocorrencias/OCORRENCIAS.zip)                                                        | XLSX dentro de ZIP | ocorrências nas rodovias estaduais — 267.883 registros |
+| malha_rodoviaria  | [Sistema Rodoviário Estadual.xlsx](https://www.der.sp.gov.br/WebSite/Arquivos/DadosAbertos/MalhaRodoviariaEstadual/MalhaRodoviariaEstadual/Sistema%20Rodovi%C3%A1rio%20Estadual.xlsx) | XLSX               | mapeamento rodovia + km → município — 4.583 registros  |  
+| feriados nacional | [Feriados Nacionais.xlsx](https://www.anbima.com.br/feriados/arqs/feriados_nacionais.xls)                                                                               | XLSX | feriados nacionais 2001 - 2060 - base ANBIMA           |
+| calendario        | Gerado via excel                                                                                                                                                        | XLSX | Calendário 2025 - 2030                                 |
+
+
 
 #### Notes
-> - O município é derivado da malha rodoviária via join `rodovia + km BETWEEN km_inicial AND km_final`.
+> - O município é derivado da malha rodoviária via join `rodovia + km BETWEEN km_inicial AND km_final
 > - Cobertura: 311 de 312 rodovias nas ocorrências — apenas SP-313 sem cobertura.
 > - Shapefile não é necessário.
 > - Os arquivos "ocorrencias" e "malha rodoviária" precisam ser convertido para parquet ou json (conteúdo invalido para csv) e depois para csv. 
 > O csv será utilizado como seed. Segue o modelo para converter de xlsx para csv
 > 
-> Para rodovias executar:
+
+>``
+
+> Para calendário executar:
 ```bash
 python3 -c "
 import pandas as pd
 from datetime import datetime
 
-df = pd.read_excel('files/rodovias.xlsx')
-df.to_parquet('files/dim_highway.parquet', index=False)
-
-df = pd.read_parquet('files/dim_highway.parquet')
+df = pd.read_excel('files/calend.xlsx')
 df.columns = [' '.join(col.split()) for col in df.columns]
 df['loaded_at'] = datetime.now()
-df.to_csv('./seeds/dim_highway.csv', index=False, quoting=1)
-"
-```
-> Para ocorrencias executar:
-```bash
-python3 -c "
-import pandas as pd
-from datetime import datetime
-
-df = pd.read_excel('files/OCORRENCIAS_2025.xlsx')
-df.columns = [' '.join(col.split()) for col in df.columns]
-df['loaded_at'] = datetime.now()
-df['dt_partition'] = datetime.now().date()
-df.to_parquet('files/ocorrencias.parquet', index=False)
+df.to_csv('./seeds/raw_dim_calend.csv', index=False, quoting=1)
 "
 ```
 
@@ -247,3 +238,6 @@ Config Path para Athena
 > s3_staging_dir — em profile para query results do Athena ✅
 > s3_data_dir — em profile para path base para tabelas temporárias (__dbt_tmp) ✅
 > external_location - em model garante que a tabela final vai para o path correto
+
+## rodar
+>dbt seed --target seed

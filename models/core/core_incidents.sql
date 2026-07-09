@@ -30,7 +30,7 @@ select
     i.dt_partition,
     cast(i.open_at as date) as dt_open_at
 from {{ ref('stg_incidents') }} i
-join {{ ref('stg_highway') }} h
+join {{ ref("dim_highway") }} h
     on i.highway_code = h.highway_code
     and (
         (h.is_segment_start = 'y' and i.km >= h.km_start and i.km <= h.km_end)

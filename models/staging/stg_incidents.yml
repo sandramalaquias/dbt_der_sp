@@ -85,3 +85,9 @@ models:
 
       - name: record_count
         description: "Number of raw records collapsed into this row. Used for auditability only."
+
+      - name: load_at
+        description: "Load date (run date) with timestamp. The same content for all data processed in this timedate"
+
+      - name: dt_partition
+        description: "Correspond of last date loaded in raw table"

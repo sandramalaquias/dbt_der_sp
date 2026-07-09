@@ -10,6 +10,6 @@
     )
 }}
 
-select * from {{ ref('stg_highway') }}
+select * from {{ ref("dim_highway") }}
 
 {% endsnapshot %}

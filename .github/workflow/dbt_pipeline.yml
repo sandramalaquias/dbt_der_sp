@@ -83,14 +83,14 @@ jobs:
       - name: Run dbt seed
         run: dbt seed --target seed
 
-      - name: Run dbt run
-        run: dbt run --target dev
-
-      - name: Run dbt test
-        run: dbt test --target dev
+      - name: Run dbt build
+        run: dbt build --target dev
 
       - name: Run dbt snapshot
         run: dbt snapshot --target snapshot
+
+      - name: Generate dbt docs
+        run: dbt docs generate --target dev
 
       - name: Upload dbt artifacts
         uses: actions/upload-artifact@v4
@@ -98,8 +98,6 @@ jobs:
           name: dbt-artifacts
           path: target/
 
-      - name: Generate dbt docs
-        run: dbt docs generate --target dev
 
       - name: Deploy dbt docs to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

@@ -4,7 +4,7 @@
 
 with df1 as (
     select distinct highway_code as code
-    from {{ ref('stg_highway') }}
+    from {{ ref("dim_highway") }}
 ),
 df2 as (
     select
