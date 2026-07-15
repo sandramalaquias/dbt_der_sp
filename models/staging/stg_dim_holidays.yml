@@ -1,9 +1,10 @@
 version: 2
 
 models:
-  - name: dim_holidays
+  - name: stg_dim_holidays
     description: "Staging table for Brazilian National Holidays. 
     Source ANBIMA - Brazilian Financial and Capital Markets Association.
+    Copy from seed/raw without transformation
     "
 
     data_tests:

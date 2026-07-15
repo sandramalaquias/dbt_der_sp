@@ -35,8 +35,11 @@ select
     count(*)                                        as record_count,
     df1.timestamp_now                               as load_at,
     max(dt_partition)                               as dt_partition
-from {{ source('raw', 'incidents') }} as inc, df1
+from {{ source('raw', 'raw_incidents') }} as inc, df1
 where "abertura" is not null and
        coalesce("fechamento", "abertura") >= "abertura"
        --and inc.dt_partition > df1.max_dt_partition
 group by 1,2,3,4,5,6,7,8,9,10,11,12,13,15
+
+
+

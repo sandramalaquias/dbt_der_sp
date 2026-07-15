@@ -1,0 +1,129 @@
+version: 2
+
+models:
+  - name: stg_dim_highway
+    description: "Staging table for São Paulo state highway network. 
+    Normalized from DER-SP open data (Sistema Rodoviário Estadual).
+    Empty fields or spaces were changed for null
+    "
+    data_tests:
+    - macro_empty_model
+
+    meta:
+      owner: "Sandra Malaquias"
+      maintained_by: "Data Engineering Team"
+      maintenance_cadence: "on demand"
+
+    columns:
+      - name: highway_id
+        description: "Surrogate key generated from highway_code and km_start (MD5 hash)."
+        data_tests:
+          - unique:
+              config:
+                severity: error
+          - not_null:
+              config:
+                severity: error
+
+      - name: highway_code
+        description: "Highway code as defined by DER-SP (e.g. SP 055, SPA 245/270, SPM 321 D)."
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: highway_class
+        description: "Functional classification of the highway segment (e.g. Acesso, Eixo, Interligação, Marginal)."
+
+      - name: highway_direction
+        description: "Carriageway side or orientation of the highway segment (e.g. left, right)."
+
+      - name: highway_level
+        description: "Jurisdiction level indicating whether the highway is state or federal (Origem field from DER-SP)."
+
+      - name: along_city
+        description: "Municipality covered by this highway segment at the given km range."
+
+      - name: regional_code
+        description: "Code of the regional coordination unit (CGR) responsible for this segment."
+
+      - name: regional_name
+        description: "Full name of the regional coordination headquarters (Sede CGR)."
+
+      - name: km_start
+        description: "Starting kilometer of the highway segment."
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: km_end
+        description: "Ending kilometer of the highway segment."
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: parcial_lengh
+        description: "Length of the highway segment in kilometers (km_end - km_start)."
+
+      - name: description_start
+        description: "Textual description of the segment starting point."
+
+      - name: description_end
+        description: "Textual description of the segment ending point."
+
+      - name: jurisdiction
+        description: "Entity responsible for the jurisdiction of this highway segment."
+
+      - name: administrator
+        description: "Entity responsible for administering this highway segment."
+
+      - name: conservator
+        description: "Entity responsible for maintaining and conserving this highway segment."
+
+      - name: highway_type
+        description: "Pavement or physical type of the highway (TipoPista field from DER-SP)."
+
+      - name: overlap
+        description: "Indicates whether this segment overlaps with another highway (Sobreposição)."
+
+      - name: underlay
+        description: "Indicates whether this segment runs underneath another highway (Subposição)."
+
+      - name: is_urban
+        description: "Indicates whether this segment is within an urban perimeter (Perímetro Urbano)."
+
+      - name: is_coincident_highway
+        description: "State highway code that coincides with this segment, if any (Estadual Coincidente)."
+
+      - name: highway_name
+        description: "Official denomination of the highway as registered by DER-SP (Denominação field, raw value)."
+
+      - name: highway_name_normalized
+        description: "Normalized highway name. Uses description_end when highway_name is blank or 's/d'."
+        data_tests:
+        - not_null:
+            config:
+              severity: error
+
+      - name: legislation
+        description: "Law or decree reference for the official denomination of the highway."
+
+      - name: highway_use_type
+        description: "Type of use or purpose of the highway segment (TPUso field from DER-SP)."
+
+      - name: transfer_law
+        description: "Law reference for municipal transfer of administration responsibility. Blank when not transferred."
+
+      - name: sub_section
+        description: "Sub-section code identifying the specific segment within the highway network."
+
+      - name: contract_start_date
+        description: "Start date of the administration or concession contract. Null when not applicable."
+
+      - name: contract_end_date
+        description: "End date of the administration or concession contract. Null when not applicable."
+
+      - name: state_code
+        description: "State code. Always 'SP' for São Paulo state highways."
