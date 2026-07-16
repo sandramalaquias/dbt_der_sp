@@ -1,7 +1,7 @@
 {{ config(
     materialized='incremental',
     format='parquet',
-    external_location='s3://der-sp-bucket/dimension/dim_incident_type/',
+    external_location='s3://der-sp-bucket/dimension/incident_type/',
     incremental_strategy='append'
 ) }}
 

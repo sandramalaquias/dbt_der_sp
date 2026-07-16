@@ -2,9 +2,9 @@ version: 2
 
 models:
   - name: dim_highway
-    description: "Staging table for São Paulo state highway network. 
+    description: "Dimension table for São Paulo state highway network. 
     Normalized from DER-SP open data (Sistema Rodoviário Estadual).
-    Empty fields or spaces were changed for null
+    Copied from staging
     "
     data_tests:
     - macro_empty_model

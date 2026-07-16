@@ -1,0 +1,112 @@
+version: 2
+
+models:
+  - name: dim_calend
+    description: "Staging table for Calendar. 
+    Copy from seed/raw without transformation
+    "
+
+    data_tests:
+    - macro_empty_model
+
+    meta:
+      owner: "Sandra Malaquias"
+      maintained_by: "Data Engineering Team"
+      maintenance_cadence: "on demand"
+
+    columns:
+      - name: date_ref
+        description: "holiday date."
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: week_day
+        description: "Day of Week in Portuguese"
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: week_day_name
+        description: "Name of week day"
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: is_weekend
+        description: "Identification flag (boolean) for weekend day"
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: year_ref
+        description: "Reference year (from date_ref)"
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: month_ref
+        description: "Month number (from date_ref)"
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: month_name
+        description: "Month name (from date_ref)"
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: year_day
+        description: "Julian day of year (from date_ref)"
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: year_week
+        description: "Sequence for week in the year (from date_ref)"
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: month_week
+        description: "Sequence for week in the month (from date_ref)"
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: quarter_year
+        description: "quarters of the year (from date_ref)"
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: fl_holiday
+        description: "Flag about holyday ('1' = Yes, '0' = No)"
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: holiday_description
+        description: "Holiday name (in Portuguese))"
+        data_tests:
+          - dbt_utils.expression_is_true:
+              expression: "(fl_holiday = 1 and holiday_description is not null) or (fl_holiday = 0 and holiday_description is null)"
+              config:
+                severity: error
+
+      - name: loaded_at
+        description: "Date in timestamp when data was loaded"
+
