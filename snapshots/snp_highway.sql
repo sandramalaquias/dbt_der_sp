@@ -6,7 +6,8 @@
         unique_key='highway_id',
         table_type='iceberg',
         strategy='timestamp',
-        updated_at='loaded_at'
+        updated_at='loaded_at',
+        external_location='s3://der-sp-bucket/snapshot/snp_highway'
     )
 }}
 
