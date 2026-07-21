@@ -4,8 +4,9 @@ models:
   - name: stg_incidents
     description: "Staging table for road incidents on São Paulo state highways. Sourced from DER-SP open data.         
     Duplicates collapsed using GROUP BY ALL with record count for auditability. 
-    Records with null open_at are excluded as they likely belong to the previous year.
-    Fields with empty value or spaces were changed to null"
+    Records with null date incidents are excluded.
+    Fields with empty value or spaces were changed to null.
+    All `dt_partition` values from the raw data that have not yet been processed will be considered."
 
     meta:
       owner: "Data Engineering Team"
@@ -17,14 +18,14 @@ models:
 
     columns:
       - name: open_at
-        description: "Date and time when the incident was opened in the system. Records with null open_at are excluded as they likely belong to the previous year."
+        description: "Date and time when the incident was opened in the system."
         data_tests:
           - not_null:
               config:
                 severity: error
 
       - name: close_at
-        description: "Date and time when the incident was closed in the system. When null, defaults to open_at."
+        description: "Date and time when the incident was closed in the system."
         data_tests:
           - not_null:
               config:
@@ -90,4 +91,4 @@ models:
         description: "Load date (run date) with timestamp. The same content for all data processed in this timedate"
 
       - name: dt_partition
-        description: "Correspond of last date loaded in raw table"
+        description: "Correspond of date loaded from raw table"

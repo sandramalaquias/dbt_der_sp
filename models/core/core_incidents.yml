@@ -2,7 +2,9 @@ models:
   - name: core_incidents
     description: "Road incidents enriched with highway segment data. 
                   Unmatched incidents (no corresponding highway segment) are excluded. 
-                  Incremental model partitioned by incident open date."
+                  Incremental model partitioned by dt_partition, inherited from the 
+                  staging load date, to preserve traceability of partitions back to the source load"
+
     meta:
       owner: "Sandra Malaquias"
       maintained_by: "Data Engineering Team"
@@ -49,10 +51,8 @@ models:
       - name: record_count
         description: "Number of records associated with the incident"
       - name: load_at
-        description: "Timestamp when the record was loaded"
+        description: "Timestamp for load"
       - name: dt_partition
-        description: "Partition date based on load date"
-      - name: dt_open_at
-        description: "Partition date based on incident open date"
+        description: "partition from staging load date to keep the traceability"
         data_tests:
           - not_null

@@ -3,8 +3,28 @@
     format='parquet',
     external_location='s3://der-sp-bucket/core/incidents/',
     incremental_strategy='append',
-    partitioned_by=['dt_open_at']
+    partitioned_by=['dt_partition']
 ) }}
+
+{% set stg = ref('stg_incidents') %}
+
+{% if is_incremental() %}
+with staging_partitions as (
+    select dt_partition
+    from {{ stg.database }}.{{ stg.schema }}."{{ stg.identifier }}$partitions"
+),
+
+core_partitions as (
+    select dt_partition
+    from {{ this.database }}.{{ this.schema }}."{{ this.identifier }}$partitions"
+),
+
+to_process as (
+    select dt_partition
+    from staging_partitions
+    where dt_partition not in (select dt_partition from core_partitions)
+)
+{% endif %}
 
 select
     i.open_at,
@@ -26,9 +46,8 @@ select
     i.geo_lat,
     i.geo_lng,
     i.record_count,
-    i.load_at,
-    i.dt_partition,
-    cast(i.open_at as date) as dt_open_at
+    cast(current_timestamp as timestamp) as load_at,
+    i.dt_partition
 from {{ ref('stg_incidents') }} i
 join {{ ref("dim_highway") }} h
     on i.highway_code = h.highway_code
@@ -40,5 +59,5 @@ join {{ ref("dim_highway") }} h
         (h.is_segment_start = 'y' and i.km = 0.0)
     )
 {% if is_incremental() %}
-where i.dt_partition = (select max(dt_partition) from {{ ref('stg_incidents') }})
+where i.dt_partition in (select dt_partition from to_process)
 {% endif %}
