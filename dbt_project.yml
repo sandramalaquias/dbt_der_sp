@@ -33,4 +33,4 @@ models:
     marts:
         +materialized: table
         +schema: marts
-
+    +schema: dbt_der_raw
