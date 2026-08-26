@@ -241,3 +241,27 @@ Config Path para Athena
 
 ## rodar
 >dbt seed --target seed
+
+## metabase como dash via docker
+
+This project includes a Metabase dashboard built on the `marts` schema (accident timeline by highway).
+
+**Before pushing to GitHub**, the Athena connection's Access Key / Secret Key were replaced with placeholders (`UPDATE HERE`), and a demo user was created for Metabase login. No real credentials are included in this repository.
+
+**To reproduce this dashboard:**
+
+1. Start Metabase:
+```bash
+   cd der_sp/metabase
+   docker compose up -d
+```
+
+2. Access `http://localhost:3000` and log in with:
+   - **user:** demo
+   - **password:** demo
+
+3. Go to **Admin → Databases → Athena**, and replace the placeholder Access Key / Secret Key with your own AWS credentials.
+
+4. The dashboard will now populate with data from your Athena instance.
+
+> Note: you'll also need your own AWS credentials configured for dbt (see the main project setup) to build the underlying `marts` tables.

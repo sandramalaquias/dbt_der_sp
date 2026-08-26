@@ -1,0 +1,50 @@
+version: 2
+
+models:
+  - name: mart_incident_type_pareto
+    description: >
+      Pareto analysis of incident types recorded on São Paulo state highways,
+      considering the entire available history.
+      It identifies the most frequent incident types and their cumulative percentage
+      contribution to the overall total of occurrences.
+      Keep only relevant types (<=80).
+    meta:
+      owner: "Sandra Malaquias"
+      maintained_by: "Data Engineering Team"
+      maintenance_cadence: "on demand"
+
+    columns:
+      - name: incident_type
+        description: "Type of the incident in portuguese (ex: Pane mecânica, Obstáculos na Pista / Mechanical failure, Obstacles on the track)"
+        tests:
+          - unique
+          - not_null
+
+      - name: total_incidents
+        description: "Total number of occurrences recorded for this type of incident across the entire history."
+        tests:
+          - not_null
+
+      - name: ranking
+        description: "Rank position of the incident type, ordered from the highest to the lowest number of occurrences."
+        tests:
+          - unique
+          - not_null
+
+      - name: cumulative_incidents
+        description: "Cumulative sum of occurrences, considering this type of incident and all preceding ones in the ranking."
+        tests:
+          - not_null
+
+      - name: pct_cumulative
+        description: "Cumulative percentage of occurrences relative to the total, calculated based on the ranking."
+        tests:
+          - not_null
+
+      - name: is_priority_80
+        description: >
+          Boolean flag indicating whether this type of incident falls within the
+          group that collectively accounts for up to 80% of total occurrences
+          (Pareto 80/20 principle). Keep only if true.
+        tests:
+          - not_null
