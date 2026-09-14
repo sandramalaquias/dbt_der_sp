@@ -2,10 +2,11 @@
 
 ## Git & GitHub
 
-- **Only Sandra pushes to GitHub.** Claude Code may create local commits in this repo as part of normal work (implementing a model, fixing a test, updating docs) without asking each time, but must never run `git push` — not even to a feature branch — without it being explicitly requested for that specific push. This is a standing rule for this repo, not a one-time approval.
-- Claude Code may create local branches, amend its own uncommitted work, and open local commits freely; anything that leaves the machine (push, PR creation, GitHub Pages deploy) is Sandra's call.
+- **Only Sandra pushes to GitHub.** Claude Code must never run `git push` — not even to a feature branch — without it being explicitly requested for that specific push. This is a standing rule for this repo, not a one-time approval.
+- **Always announce a commit before making it, so Sandra can review the changes first.** Don't run `git commit` silently as part of a larger task — stop, summarize what would be committed (and show the diff/status if useful), and wait for a go-ahead. This applies every time, not just the first commit of a session.
+- Claude Code may create local branches and amend its own uncommitted work freely; anything that leaves the machine (push, PR creation, GitHub Pages deploy) is Sandra's call, and every commit is announced first per the rule above.
 - Current default branch: `main`. Feature work happens on branches like `der/kpis` (see current branch at time of writing).
-- A PR into `main` triggers the GitHub Actions pipeline (`.github/workflow/dbt_pipeline.yml`): full `dbt build` against Athena plus a `dbt docs` deploy to GitHub Pages. Keep that in mind before opening a PR — it's a real cloud run against real AWS resources and billed Athena queries, not a free local check.
+- Opening a PR into `main` runs nothing: `.github/workflows/dbt_pipeline.yml` is `workflow_dispatch`-only by design (see [tech-stack.md](./tech-stack.md#cicd)). When it is triggered manually, it's a real cloud run against real AWS resources and billed Athena queries — and it writes to the same S3 paths and Glue schema the dashboards read, so treat pressing that button as touching production.
 
 ## Commit style
 

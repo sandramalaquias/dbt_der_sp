@@ -14,11 +14,13 @@ source .venv/bin/activate
 pip install dbt-athena-community
 ```
 
-dbt needs AWS credentials for Athena/S3/Glue (`aws_profile_name: default` in `profile.yml`). The real `profiles.yml` dbt reads must live in `~/.dbt/profiles.yml` — the `profile.yml` (no trailing "s") checked into this repo is a reference template only, not consumed directly by dbt.
+`profile.yml` at the repo root is the single definition of all three targets, shared by local runs and both CI workflows — copy it into `~/.dbt/profiles.yml`, never re-declare it elsewhere. `aws_profile_name` is the field to repoint at your own AWS profile.
+
+**Don't blind-`cp` it over `~/.dbt/profiles.yml`** — that file is shared across dbt projects and holds unrelated profiles on this machine. Merge the `der_sp:` block in, then verify with `dbt debug` (it runs a real Athena connection test).
 
 ## Common commands
 
-Full pipeline (seed → run → test → snapshot, logs to `logs/`):
+Full pipeline (deps → seed → run → test → snapshot, logs to `logs/`, tails the log on failure):
 ```bash
 ./run_dbt_pipeline.sh
 ```
@@ -26,16 +28,16 @@ Full pipeline (seed → run → test → snapshot, logs to `logs/`):
 Equivalent individual steps (note each uses a different `--target`):
 ```bash
 dbt seed --target seed        # load seeds/*.csv into raw tables (schema dbt_der_raw)
-dbt run --target dev          # build staging/dimensions/core/marts (schema dbt_der / per-layer schema below)
-dbt test --target dev
+dbt run --target prod          # build staging/dimensions/core/marts (schema dbt_der / per-layer schema below)
+dbt test --target prod
 dbt snapshot --target snapshot
 ```
 
 Single model / test:
 ```bash
-dbt run --select stg_incidents --target dev
-dbt run --select core_incidents+ --target dev   # model and downstream
-dbt test --select stg_incidents --target dev
+dbt run --select stg_incidents --target prod
+dbt run --select core_incidents+ --target prod   # model and downstream
+dbt test --select stg_incidents --target prod
 ```
 
 Other:
@@ -93,4 +95,4 @@ Per-layer defaults live in `dbt_project.yml` (`staging`/`core` = view schema `st
 
 ## Git
 
-Claude Code may create local commits in this repo freely. **Never run `git push`** without it being explicitly requested for that specific push — only Sandra pushes to GitHub. See `constitution/workflow.md`.
+**Always announce a commit before making it** — summarize what would be committed and wait for a go-ahead, every time, not just once per session. **Never run `git push`** without it being explicitly requested for that specific push — only Sandra pushes to GitHub. See `constitution/workflow.md`.

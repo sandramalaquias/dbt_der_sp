@@ -7,7 +7,7 @@
 
 ## Storage & compute (AWS)
 
-- **Amazon Athena** — query engine dbt runs against. Three profile targets (`dev`, `seed`, `snapshot`) point at different S3 locations/schemas for the same account — see `profile.yml`.
+- **Amazon Athena** — query engine dbt runs against. Three profile targets (`dev`, `seed`, `snapshot`) point at deliberately non-overlapping S3 locations/schemas in the same account — see `profile.yml`, and [principles.md](./principles.md#targets--s3-layout) for why the separation is mandatory rather than cosmetic.
 - **AWS Glue Data Catalog** (`database: awsdatacatalog`) — metastore behind Athena; tables are registered here, not in a dedicated warehouse.
 - **Amazon S3** — actual data storage, bucket `der-sp-bucket` (plus a shared `smm-packt-serverless-analytics` bucket for Athena query staging). Models write to explicit `external_location` paths per layer (`raw/`, `staging/`, `core/`, `dimension/`, `marts/`, `snapshot/`).
 - **File formats**: Parquet for regular tables/incremental models; **Iceberg** specifically for snapshots, since Athena snapshot/SCD tracking needs a format with update support — plain Parquet-on-S3 doesn't.
@@ -21,7 +21,10 @@ Terraform was evaluated for provisioning the above and intentionally dropped (se
 
 ## CI/CD
 
-- **GitHub Actions** (`.github/workflow/dbt_pipeline.yml`) — triggers on PRs to `main`, a monthly cron (10th, 08:00 America/Sao_Paulo), and manual `workflow_dispatch`. Steps: install `dbt-athena-community`, `dbt deps`, build `~/.dbt/profiles.yml` from a `DBT_ENV` secret, `dbt seed --target seed`, `dbt build --target dev`, `dbt snapshot --target snapshot`, `dbt docs generate`, then publish `target/` to **GitHub Pages** via `peaceiris/actions-gh-pages`.
+- **GitHub Actions** (`.github/workflows/dbt_pipeline.yml`) — stands in for a real orchestrator, since this project has none. Steps: install `dbt-athena-community`, `dbt deps`, write a `[default]` AWS profile from the `DBT_ENV` secret and copy the repo's `profile.yml` into place, then the four dbt invocations with their own targets (`seed` → `run` → `test` → `snapshot`, per [principles.md](./principles.md#targets--s3-layout)), `dbt docs generate`, and publish `target/` to **GitHub Pages** via `peaceiris/actions-gh-pages`.
+- **Manual trigger only** (`workflow_dispatch`). The `pull_request` and monthly `schedule` triggers were deliberately removed: every model pins an absolute `external_location`, so *any* run — PR or cron — writes to the same S3 prefixes and Glue schema that Metabase reads. There is no environment isolation, so an automatic run would silently overwrite the data the dashboards are on. Re-adding `schedule` is a one-line change once that's addressed. Note the "Run workflow" button only appears once the file is on the default branch, and scheduled workflows only fire from the default branch.
+- A failing step stops the job by default, so `dbt test` failing prevents the snapshot from running — matching `run_dbt_pipeline.sh` (see its inline comment for why).
+- **`dbt_tests.yml`** is a second, separate workflow running only `dbt test`. It's split from the build because the two want different failure semantics: the build shouldn't abort on data-quality noise, while the monitor's whole job is to shout about it. Being test-only, it never writes — so unlike the build, it has no isolation problem and its `schedule` trigger could be enabled safely. It still defines all three targets: the profile describes the *environment*, not one job's needs (see [principles.md](./principles.md#environment-reproducibility)).
 
 ## BI / consumption
 
