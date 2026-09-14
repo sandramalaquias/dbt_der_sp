@@ -1,0 +1,72 @@
+name: dbt Pipeline
+
+on:
+  workflow_dispatch:
+
+jobs:
+  dbt-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # profile.yml declares aws_profile_name, so the runner needs a real named profile
+      # rather than loose env vars — same shape a developer machine has.
+      - name: Configure AWS default profile
+        run: |
+          echo "${{ secrets.DBT_ENV }}" > .env
+          export $(cat .env | xargs)
+          rm .env
+          mkdir -p ~/.aws
+          printf '[default]\naws_access_key_id = %s\naws_secret_access_key = %s\n' \
+            "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY" > ~/.aws/credentials
+          printf '[default]\nregion = %s\n' "$AWS_REGION" > ~/.aws/config
+
+      - name: Install dbt
+        run: |
+          pip install dbt-athena-community
+
+      - name: Install dbt packages
+        run: dbt deps
+
+      # The repo's profile.yml is the single definition of the environment; credentials
+      # come from the AWS env vars above, resolved by boto3.
+      - name: Create profiles.yml
+        run: |
+          mkdir -p ~/.dbt
+          cp profile.yml ~/.dbt/profiles.yml
+
+      - name: Run dbt seed
+        run: dbt seed --target seed
+
+      - name: Run dbt run
+        run: dbt run --target prod
+
+      - name: Run dbt test
+        run: dbt test --target prod
+
+      - name: Run dbt snapshot
+        run: dbt snapshot --target snapshot
+
+      - name: Generate dbt docs
+        run: dbt docs generate --target prod
+
+      - name: Upload dbt artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-artifacts
+          path: target/
+
+
+      - name: Deploy dbt docs to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: ./target
