@@ -29,7 +29,7 @@ Conventions specific to this repo, worth keeping consistent as it grows. General
 
 ## One environment, and it is production
 
-- **There is no test environment, by design.** A second set of S3 prefixes and Glue schemas would double the infrastructure for no demonstration value, so every run — local script or manual CI dispatch — reads and writes the data the dashboards serve.
+- **There is no test environment, by design.** A second set of S3 prefixes and Glue schemas would double the infrastructure for no demonstration value, so every run — local script or manual CI dispatch — reads and writes the project's only copy of the data.
 - The target is therefore named **`prod`**, not `dev`. This is a legibility decision, not cosmetics: the previous name meant the safest-sounding label was wired to the least safe destination, and a bare `dbt run` (which falls back to the profile's default target) would quietly hit production. Now every command that touches it says `prod` out loud.
 - The protection against accidents is consequently **not** isolation, which doesn't exist here. It's that runs are deliberate: CI is `workflow_dispatch`-only, and concurrent runs must be prevented, since two of them would write the same S3 prefixes at once.
 - Renaming the target was safe precisely because nothing derives behaviour from it — no model, macro, snapshot or test references `target.name`. Locations come from each model's own `external_location` and schemas from the target's `schema:` key. Keep it that way: **don't branch logic on the target name**, or the single-environment premise starts leaking into the models.

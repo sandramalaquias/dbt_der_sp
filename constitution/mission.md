@@ -11,13 +11,16 @@ The artifacts here double as a **demonstration**: each dbt concept is present to
 There's no fixed ship date or external stakeholder — "done" is a moving target defined by which dbt/analytics-engineering concepts have been exercised hands-on. So far that includes:
 
 - Layered modeling (staging → dimensions → core → marts)
-- Multiple materializations (view, table, incremental) and when to use each
+- Materialization choices — `table` vs `incremental`, and when each applies. The project ended up with no views at all, which is itself the finding: on Athena a view saves no storage but re-scans on every read, so the cost lands on the consumer.
 - Incremental strategies against a non-native-incremental engine (Athena), including manual partition-diffing via `"{{ this.identifier }}$partitions"`
 - Snapshots or SCD tracking (`snapshots/snp_highway.sql`), including the Iceberg-vs-Parquet tradeoff on Athena
 - Seeds fed by a real (if lightweight) ingestion process
 - Custom singular tests for data-quality guardrails (join-match rates, date sanity), plus a reusable macro-based test
 - CI (GitHub Actions) standing in for an orchestrator — building the project and publishing `dbt docs`
-- A BI layer (Metabase) consuming the marts
+
+Still open, not yet exercised:
+
+- A BI layer consuming the marts. `metabase/docker-compose.yml` is in place, but no dashboards have been built.
 
 New iterations should keep adding to this list deliberately — pick a concept, exercise it against this dataset, document the decision in [principles.md](./principles.md) if it's non-obvious.
 

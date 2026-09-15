@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-dbt project analyzing 2025 incident (ocorrência) data on São Paulo state highways (DER-SP open data), run on Athena/Glue over S3-backed Iceberg/Parquet tables, with a local Metabase instance for dashboards. It's a learning/showcase project for dbt — ingestion is deliberately kept as standalone Python scripts rather than a Lambda/Step Functions pipeline.
+dbt project analyzing 2025 incident (ocorrência) data on São Paulo state highways (DER-SP open data), run on Athena/Glue over S3-backed Iceberg/Parquet tables. It's a learning/showcase project for dbt: each concept is present to demonstrate when, how and why it applies. Ingestion is deliberately standalone Python scripts rather than a Lambda/Step Functions pipeline, and `raw` is treated as a contract boundary fed from outside, with seeds standing in for the landing step.
 
 ## Setup
 
@@ -56,21 +56,19 @@ python3 scripts/get_holidays.py
 python3 scripts/get_calend.py
 ```
 
-Metabase (local BI, reads from `metabase/data/`):
-```bash
-cd metabase && docker compose up
-```
+There is no BI layer yet. `metabase/docker-compose.yml` exists for a future visualization step and nothing has been built on it — `metabase/data/` is gitignored runtime state that Docker recreates on first start.
 
 ## Architecture
 
 **Layer flow:** `raw` (Athena source tables, schema `dbt_der_raw`, loaded from `seeds/`) → `staging` (`stg_*`) → `dimensions` (`dim_*`) → `core` (`core_incidents`) → `marts` (`mart_*`).
 
-Per-layer defaults live in `dbt_project.yml` (`staging`/`core` = view schema `staging`/`core`, `dimensions` = view schema `dim`, `marts` = table schema `marts`), but several models **override** these at the model level via `config()`:
-- `stg_incidents` and `core_incidents` are `materialized='incremental'`, partitioned by `dt_partition`, and read/write directly as Parquet at explicit `external_location` S3 paths (not through the Athena default location). Their incremental logic queries `"{{ this.identifier }}$partitions"` to diff already-processed `dt_partition` values against upstream, rather than using a `where` on `this`.
-- `dim_highway` is `materialized='table'` (not view) since it's a small reference dataset.
-- All `mart_*` models are `materialized='table'` with an explicit `external_location`.
+`dbt_project.yml` sets per-layer schemas (`staging`, `dim`, `core`, `marts`) and only one materialization default, `table` for marts. **Every model declares its own materialization and an explicit `external_location`** in its `config()`, so there is no layer-wide materialization default to rely on outside marts — `staging`, `dimensions` and `core` mix tables and incrementals, which is why no default is declared for them.
 
-**Highway matching** (`core_incidents.sql`, and mirrored in the two `stg_*unmatched*` tests): incidents are joined to `dim_highway` by `highway_code` plus a km-range match against `km_start`/`km_end`, with special-cased boundary logic for segment starts (`is_segment_start = 'y'`) vs. interior km 0. Any change to one side of this join logic should be checked against the other copy.
+- `stg_incidents`, `core_incidents` and `dim_incident_type` are `materialized='incremental'` with `incremental_strategy='append'`. The first two are partitioned by `dt_partition` and diff `"{{ this.identifier }}$partitions"` against upstream rather than filtering on `this`; `dim_incident_type` instead assigns `max(id) + row_number()` to types it doesn't already hold.
+- Everything else is `materialized='table'`, including every `stg_dim_*` and `dim_*` model. **There are no views in this project.**
+- Because each model pins `external_location`, the target's `s3_data_dir` is not what places them. Seeds and the snapshot are the exceptions, and that distinction matters — see `constitution/principles.md`.
+
+**Highway matching** (`core_incidents.sql`): incidents are joined to `dim_highway` by `highway_code` plus a km-range match against `km_start`/`km_end`, with special-cased boundary logic for segment starts (`is_segment_start = 'y'`) vs. interior km 0. The identical predicate is duplicated in `tests/staging/stg_assert_incidents_km_unmatched_highways_km.sql`, which uses it as a `left join` to measure the non-match rate — **change both copies together**. (The other unmatched test, `stg_incidents_code_unmatched_highways_code.sql`, joins on `highway_code` only and has no km logic.)
 
 **Calendar spine**: `mart_incidents_daily_by_highway` builds a full date × highway cross join (`dim_calend` × `dim_highway`, scoped to the year range actually present in incidents) and left-joins incident counts, so every highway/day combination appears even with zero incidents — this is what enables timeline/seasonality analysis.
 

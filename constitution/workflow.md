@@ -6,7 +6,7 @@
 - **Always announce a commit before making it, so Sandra can review the changes first.** Don't run `git commit` silently as part of a larger task — stop, summarize what would be committed (and show the diff/status if useful), and wait for a go-ahead. This applies every time, not just the first commit of a session.
 - Claude Code may create local branches and amend its own uncommitted work freely; anything that leaves the machine (push, PR creation, GitHub Pages deploy) is Sandra's call, and every commit is announced first per the rule above.
 - Current default branch: `main`. Feature work happens on branches like `der/kpis` (see current branch at time of writing).
-- Opening a PR into `main` runs nothing: `.github/workflows/dbt_pipeline.yml` is `workflow_dispatch`-only by design (see [tech-stack.md](./tech-stack.md#cicd)). When it is triggered manually, it's a real cloud run against real AWS resources and billed Athena queries — and it writes to the same S3 paths and Glue schema the dashboards read, so treat pressing that button as touching production.
+- Opening a PR into `main` runs nothing: `.github/workflows/dbt_pipeline.yml` is `workflow_dispatch`-only by design (see [tech-stack.md](./tech-stack.md#cicd)). When it is triggered manually, it's a real cloud run against real AWS resources and billed Athena queries — and it writes to the project's only copy of the data, so treat pressing that button as touching production.
 
 ## Commit style
 

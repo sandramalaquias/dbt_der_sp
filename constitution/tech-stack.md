@@ -22,13 +22,14 @@ Terraform was evaluated for provisioning the above and intentionally dropped (se
 ## CI/CD
 
 - **GitHub Actions** (`.github/workflows/dbt_pipeline.yml`) — stands in for a real orchestrator, since this project has none. Steps: install `dbt-athena-community`, `dbt deps`, write a `[default]` AWS profile from the `DBT_ENV` secret and copy the repo's `profile.yml` into place, then the four dbt invocations with their own targets (`seed` → `run` → `test` → `snapshot`, per [principles.md](./principles.md#targets--s3-layout)), `dbt docs generate`, and publish `target/` to **GitHub Pages** via `peaceiris/actions-gh-pages`.
-- **Manual trigger only** (`workflow_dispatch`). The `pull_request` and monthly `schedule` triggers were deliberately removed: every model pins an absolute `external_location`, so *any* run — PR or cron — writes to the same S3 prefixes and Glue schema that Metabase reads. There is no environment isolation, so an automatic run would silently overwrite the data the dashboards are on. Re-adding `schedule` is a one-line change once that's addressed. Note the "Run workflow" button only appears once the file is on the default branch, and scheduled workflows only fire from the default branch.
+- **Manual trigger only** (`workflow_dispatch`). The `pull_request` and monthly `schedule` triggers were deliberately removed: every model pins an absolute `external_location`, so *any* run — PR or cron — writes to the same S3 prefixes and Glue schema as every other run. There is no environment isolation, so an automatic run would silently overwrite the project's only copy of the data. Re-adding `schedule` is a one-line change once that's addressed. Note the "Run workflow" button only appears once the file is on the default branch, and scheduled workflows only fire from the default branch.
 - A failing step stops the job by default, so `dbt test` failing prevents the snapshot from running — matching `run_dbt_pipeline.sh` (see its inline comment for why).
 - **`dbt_tests.yml`** is a second, separate workflow running only `dbt test`. It's split from the build because the two want different failure semantics: the build shouldn't abort on data-quality noise, while the monitor's whole job is to shout about it. Being test-only, it never writes — so unlike the build, it has no isolation problem and its `schedule` trigger could be enabled safely. It still defines all three targets: the profile describes the *environment*, not one job's needs (see [principles.md](./principles.md#environment-reproducibility)).
 
 ## BI / consumption
 
-- **Metabase** (`metabase/docker-compose.yml`), run locally via Docker Compose, backed by a file-based `metabase.db` checked into the repo (`metabase/data/`). Used to explore and dashboard the `mart_*` tables.
+- **None yet.** `metabase/docker-compose.yml` is kept for a future visualization step, but nothing has been built on it — no dashboards exist. The marts are queried directly in Athena.
+- `metabase/data/` is gitignored: it's the container's runtime H2 state, recreated on first start. It used to be committed, which meant a 7.2 MB binary rewritten in full on every change, preserving nothing but a connection form.
 
 ## Local dev environment
 
