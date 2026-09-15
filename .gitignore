@@ -7,3 +7,4 @@ logs/
 files/*.csv
 files/*.parquet
 .idea/
+metabase/data/
