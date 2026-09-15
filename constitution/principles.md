@@ -52,4 +52,4 @@ Conventions specific to this repo, worth keeping consistent as it grows. General
 ## Documentation
 
 - Every model should have a matching `.yml` alongside it (already the pattern for every model in `models/`) — keep this up even for quick experiments, since the point of the project is partly to practice writing good dbt docs.
-- When the root `README.md` and `readme_new.md` disagree, treat the discrepancy as a signal that `README.md` needs to be reconciled or replaced, not that `readme_new.md` is wrong — see [workflow.md](./workflow.md).
+- `README.md` is the single project README, and it is current. It documents the marts by **grain and by the decisions behind them**, not column by column — every column already has a description and its tests in the model's `.yml`, which `dbt docs` publishes. Don't reintroduce column tables there: the previous README's most detailed one described `mart_trechos_criticos`, a mart that no longer exists.

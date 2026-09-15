@@ -14,5 +14,5 @@
 
 ## Docs upkeep
 
-- `README.md` (root) is currently stale relative to the actual models (see [principles.md](./principles.md)); `readme_new.md` is the accurate draft. Until they're reconciled, prefer `readme_new.md` and this `constitution/` folder over `README.md` for anything architectural.
-- [CLAUDE.md](../CLAUDE.md) documents the current, as-built architecture and commands for AI agents working in this repo. This `constitution/` folder documents the *why* behind that architecture and the collaboration rules — update both when a decision changes, not just one.
+- Three documents describe this project and each has a distinct job. **`README.md`** is for a reader arriving at the repo: scope, architecture, how to run it. **[CLAUDE.md](../CLAUDE.md)** is the as-built reference for AI agents working in the code — commands and mechanics, kept terse. This **`constitution/`** folder holds the *why*, including decisions that look like oversights until you know the reason.
+- A decision that changes usually touches more than one of them. Update all that apply, not just the nearest — this repo has already had documentation outlive what it described.

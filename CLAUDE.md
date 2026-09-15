@@ -81,15 +81,11 @@ There is no BI layer yet. `metabase/docker-compose.yml` exists for a future visu
 ## Naming conventions
 
 - Portuguese source column names only appear quoted, inside `stg_*` models reading directly from `source()`; everything downstream of staging uses English snake_case.
-- Highway codes follow DER-SP's coding scheme (documented in `readme_new.md`): trunk `SP_XXX`, access `SPA_XXX/XXX`, right/left marginal `SPM_XXX_D`/`SPM_XXX_E`, device `SPD_XXX/XXX`, interconnection `SPI_XXX/XXX`.
+- Highway codes follow DER-SP's coding scheme (documented in `README.md`): trunk `SP_XXX`, access `SPA_XXX/XXX`, right/left marginal `SPM_XXX_D`/`SPM_XXX_E`, device `SPD_XXX/XXX`, interconnection `SPI_XXX/XXX`.
 
 ## Constitution
 
 `constitution/` holds the project's mission, tech-stack rationale, engineering principles, and collaboration workflow (including the git push rule below). Read it for *why* decisions were made, not just *what* the code does.
-
-## Docs status
-
-`README.md` (root, Portuguese) describes an older/different design (e.g. a `mart_trechos_criticos` mart, Terraform/Lambda/Step Functions ingestion) that no longer matches the models in this repo. `readme_new.md` (untracked, English) reflects the current three marts (`mart_incident_type_pareto`, `mart_incidents_daily_by_highway`, `mart_incident_summary`) and the current script-based ingestion approach — treat it as the more accurate source when the two disagree, and check with the user before relying on README.md for architecture claims.
 
 ## Git
 

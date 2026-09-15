@@ -27,6 +27,6 @@ New iterations should keep adding to this list deliberately — pick a concept, 
 ## Non-goals
 
 - **Not a production data platform.** No SLAs, no on-call, no need for the ingestion step to be bulletproof.
-- **No IaC.** Infrastructure (S3 buckets, Athena workgroup, Glue catalog/crawler) is provisioned manually / out of band. Terraform was considered and deliberately dropped — see `readme_new.md` — because provisioning it properly would be overhead unrelated to learning dbt.
+- **No IaC.** Infrastructure (S3 buckets, Athena workgroup, Glue catalog/crawler) is provisioned manually / out of band. Terraform was considered and deliberately dropped — see `README.md` — because provisioning it properly would be overhead unrelated to learning dbt.
 - **No production-grade ingestion.** The Python extraction scripts (`scripts/get_*.py`) are intentionally simple, manually-triggered, local scripts — not a Lambda/Step Functions pipeline. This keeps the project's focus on dbt itself.
 - **Not optimizing for "correct" analytics.** Business logic (Pareto threshold, km-range highway matching, etc.) is good enough to be realistic, not rigorously validated against ground truth.
