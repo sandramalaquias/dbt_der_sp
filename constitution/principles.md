@@ -34,6 +34,42 @@ Conventions specific to this repo, worth keeping consistent as it grows. General
 - The protection against accidents is consequently **not** isolation, which doesn't exist here. It's that runs are deliberate: CI is `workflow_dispatch`-only, and concurrent runs must be prevented, since two of them would write the same S3 prefixes at once.
 - Renaming the target was safe precisely because nothing derives behaviour from it — no model, macro, snapshot or test references `target.name`. Locations come from each model's own `external_location` and schemas from the target's `schema:` key. Keep it that way: **don't branch logic on the target name**, or the single-environment premise starts leaking into the models.
 
+### Why adding a dev environment was considered and dropped
+
+This was investigated properly and rejected. The short version: the tooling already provides the protection a dev environment would buy.
+
+What breaks if you run a broken model against production, and how to recover:
+
+| Layer | Damage | Recovery |
+|---|---|---|
+| The 8 `table` models | Overwritten | Run again — full refresh is their normal mode |
+| The 3 `append` incrementals | A partition gets polluted, and the `$partitions` diff then treats it as done, so a corrected re-run skips it | `dbt run --full-refresh --select <model>` — the materialization drops the relation and `create_table_as` calls `delete_from_s3` on the location before rebuilding. Works because raw is a seed holding full history, so the rebuild reproduces the same data |
+| The snapshot | A false SCD row, permanent by design | **None.** This is the only point of no return, and it is protected by being an explicit separate command with its own target — nothing triggers it while testing a model |
+
+So one irrecoverable case, reachable only by deliberately typing `dbt snapshot`. Validate changes with `dbt run --empty` (limits refs and sources to zero rows, catching compile and column errors without processing data), and recover with `--full-refresh`.
+
+**If the question is reopened, know what actually blocks it.** Environment separation needs two independent things, and only one is missing:
+
+- **Identity** is already solved and free: the target's `schema:` produces `dbt_der_dev_core`, `dbt_der_dev_dim` and so on, with no model changes. Verified with `dbt ls --target`.
+- **Storage** is not: all 11 models carry `s3://der-sp-bucket/...` as a literal.
+
+Changing only one of them is worse than changing neither. Same schema with different paths means one Glue table whose location gets repointed — production loses the reference to its own files. Different schemas with a shared path means two tables over the same prefix, and for `table` models `create_table_as` calls `delete_from_s3` first, so a dev run destroys production data immediately.
+
+No identity mechanism escapes this, which is why the obvious escapes don't work:
+
+- **A different Athena data source** (`database:`) is not available for what we need. Athena accepts four catalog types, and none gives a second writable destination over the same S3:
+  - `GLUE` — a Glue catalog identified by *catalog-id*. This is how S3 Tables registers (`s3tablescatalog-dbt-snapshot` reports as type GLUE), so a second Glue catalog in one account is possible in principle, but S3 Tables is the only thing providing one, and it accepts Iceberg only. Other catalog-ids belong to **other accounts**, which runs into the bucket-name problem below.
+  - `HIVE` — an external Hive Metastore reached through a Lambda bridge. It would be a second catalog over the *same* S3 paths, so the collision is unchanged, on top of operating a metastore.
+  - `LAMBDA` / `FEDERATED` — federated query connectors for data that is **not** S3 files (DynamoDB, PostgreSQL, Redshift, BigQuery, Kafka, …). They are effectively read-only: Athena cannot CTAS or INSERT into most of them, so dbt cannot materialize anything there.
+
+  For materializing tables as files on S3, `AwsDataCatalog` is the only usable catalog. The other types exist to *read* external data, not to give a second write destination.
+- **The console's middle "Catalog" field** shows `None` under Glue, because that level doesn't exist there, and dbt has no field for it.
+- **A second AWS account** does not help either: the models name the bucket, and S3 bucket names are globally unique, so another account cannot own `der-sp-bucket`.
+
+The real lever is therefore whether models should own their paths at all. Today they do, which buys readable prefixes (`/core/incidents/`) and costs the ability to vary anything by configuration. **Removing the 11 `external_location` lines** — letting `s3_data_dir` place tables the way it already places seeds — would make any environment, in any account, a profile block. It is less code than templating, not more. The costs: generated prefixes like `dbt_der_core_core_incidents/`, a one-time full refresh, and a decision about where `prod`'s `s3_data_dir` should point, since today it names a bucket holding no model data.
+
+For reference, S3 Tables removes path management entirely rather than parameterizing it — storage is service-managed, which is why `der_sp_snapshots_test` coexists with `snp_highway` under the same database name in a different catalog with no collision. It is Iceberg-only, so it would mean converting every model.
+
 ## Environment reproducibility
 
 - **Premise: whoever clones this repo must be able to reproduce the environment from it.** The repo is the definition of the environment, not just of the transformations.
