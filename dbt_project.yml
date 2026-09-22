@@ -16,18 +16,21 @@ clean-targets: ["target", "dbt_packages"]
 
 seeds:
   der_sp:
-    +schema: raw
     +file_format: parquet
+    +delimiter: "\t"
 
 models:
   der_sp:
+    # Materialization is declared per model, in each model's own config() block.
+    # Staging, dimensions and core each mix tables and incrementals, so no
+    # layer-wide default would be true for them. Marts are the exception: all
+    # three are tables, so the default here is accurate.
     staging:
-        +materialized: view
-        +schema: staging
+      +schema: staging
+    dimensions:
+      +schema: dim
     core:
-        +materialized: view
-        +schema: core
+      +schema: core
     marts:
-        +materialized: table
-        +schema: marts
-
+      +materialized: table
+      +schema: marts

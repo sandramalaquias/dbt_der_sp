@@ -1,0 +1,42 @@
+version: 2
+
+models:
+  - name: stg_dim_holidays
+    description: "Staging table for Brazilian National Holidays. 
+    Source ANBIMA - Brazilian Financial and Capital Markets Association.
+    Copy from seed/raw without transformation
+    "
+
+    data_tests:
+    - macro_empty_model
+
+    meta:
+      owner: "Sandra Malaquias"
+      maintained_by: "Data Engineering Team"
+      maintenance_cadence: "on demand"
+
+    columns:
+      - name: date_ref
+        description: "holiday date."
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: week_day
+        description: "Day of Week in Portuguese"
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: holiday_description
+        description: "Holiday description in Portuguese"
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: loaded_at
+        description: "Date in timestamp when data was loaded"
+

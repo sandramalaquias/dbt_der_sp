@@ -1,0 +1,58 @@
+models:
+  - name: core_incidents
+    description: "Road incidents enriched with highway segment data. 
+                  Unmatched incidents (no corresponding highway segment) are excluded. 
+                  Incremental model partitioned by dt_partition, inherited from the 
+                  staging load date, to preserve traceability of partitions back to the source load"
+
+    meta:
+      owner: "Sandra Malaquias"
+      maintained_by: "Data Engineering Team"
+      maintenance_cadence: "on demand"
+    columns:
+      - name: open_at
+        description: "Timestamp when the incident was opened"
+      - name: close_at
+        description: "Timestamp when the incident was closed"
+      - name: highway_code
+        description: "Highway identifier code"
+      - name: highway_id
+        description: "Surrogate key for the highway segment"
+        data_tests:
+          - not_null
+      - name: highway_name_normalized
+        description: "Normalized highway name"
+      - name: along_city
+        description: "City where the highway segment is located"
+      - name: is_urban
+        description: "Indicates if the segment is in an urban area"
+      - name: is_segment_start
+        description: "Indicates if the km is at the start of a highway segment"
+      - name: km
+        description: "Kilometer marker where the incident occurred"
+      - name: traffic_direction
+        description: "Traffic direction at the incident location"
+      - name: regional_code
+        description: "Regional code of the incident area"
+      - name: regional_name
+        description: "Regional name of the incident area"
+      - name: incident_category
+        description: "Category of the incident"
+      - name: incident_type
+        description: "Type of the incident"
+      - name: incident_date
+        description: "Date when the incident occurred"
+      - name: day_of_week
+        description: "Day of the week when the incident occurred"
+      - name: geo_lat
+        description: "Latitude coordinate of the incident"
+      - name: geo_lng
+        description: "Longitude coordinate of the incident"
+      - name: record_count
+        description: "Number of records associated with the incident"
+      - name: load_at
+        description: "Timestamp for load"
+      - name: dt_partition
+        description: "partition from staging load date to keep the traceability"
+        data_tests:
+          - not_null

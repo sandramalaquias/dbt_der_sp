@@ -3,25 +3,28 @@
     format='parquet',
     external_location='s3://der-sp-bucket/core/incidents/',
     incremental_strategy='append',
-    partitioned_by=['dt_open_at']
+    partitioned_by=['dt_partition']
 ) }}
 
-with incidents as (
-    select *
-    from {{ ref('stg_incidents') }}
-    {% if is_incremental() %}
-    where dt_partition = (select max(dt_partition) from {{ ref('stg_incidents') }})
-    {% endif %}
+{% set stg = ref('stg_incidents') %}
+
+{% if is_incremental() %}
+with staging_partitions as (
+    select dt_partition
+    from {{ stg.database }}.{{ stg.schema }}."{{ stg.identifier }}$partitions"
 ),
 
-highway_with_lag as (
-    select *,
-        lag(km_end) over (
-            partition by highway_code
-            order by km_start
-        ) as prev_km_end
-    from {{ ref('stg_highway') }}
+core_partitions as (
+    select dt_partition
+    from {{ this.database }}.{{ this.schema }}."{{ this.identifier }}$partitions"
+),
+
+to_process as (
+    select dt_partition
+    from staging_partitions
+    where dt_partition not in (select dt_partition from core_partitions)
 )
+{% endif %}
 
 select
     i.open_at,
@@ -31,6 +34,7 @@ select
     h.highway_name_normalized,
     h.along_city,
     h.is_urban,
+    h.is_segment_start,
     i.km,
     i.traffic_direction,
     i.regional_code,
@@ -42,19 +46,18 @@ select
     i.geo_lat,
     i.geo_lng,
     i.record_count,
-    i.load_at,
-    i.dt_partition,
-    cast(i.open_at as date) as dt_open_at
-from incidents i
-left join highway_with_lag h
+    cast(current_timestamp as timestamp) as load_at,
+    i.dt_partition
+from {{ ref('stg_incidents') }} i
+join {{ ref("dim_highway") }} h
     on i.highway_code = h.highway_code
     and (
-        -- OR used instead of CASE to allow query optimizer to evaluate conditions independently
-        (h.prev_km_end = h.km_start and i.km > h.km_start and i.km <= h.km_end)
+        (h.is_segment_start = 'y' and i.km >= h.km_start and i.km <= h.km_end)
         or
-        (
-            (h.prev_km_end != h.km_start or h.prev_km_end is null)
-            and i.km >= h.km_start
-            and i.km <= h.km_end
-        )
+        (h.is_segment_start <> 'y' and i.km > h.km_start and i.km <= h.km_end)
+        or
+        (h.is_segment_start = 'y' and i.km = 0.0)
     )
+{% if is_incremental() %}
+where i.dt_partition in (select dt_partition from to_process)
+{% endif %}

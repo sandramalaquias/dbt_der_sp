@@ -1,7 +1,15 @@
+# Single definition of the environment, shared by local runs and both CI workflows.
+#
+# There is ONE environment and it is production: these targets all read and write the
+# data the dashboards serve. There is no sandbox to experiment in, which is why the
+# target is named prod — so that every command that touches it says so out loud.
+#
+# Reproducing this project? aws_profile_name is the knob to change: point it at your
+# own named AWS profile (see ~/.aws/credentials).
 der_sp:
-  target: dev
+  target: prod
   outputs:
-    dev:
+    prod:
       type: athena
       s3_staging_dir: s3://smm-packt-serverless-analytics/results/dbt/
       s3_data_dir: s3://smm-packt-serverless-analytics/dbt-data/
@@ -20,7 +28,7 @@ der_sp:
       s3_data_naming: table
       region_name: us-east-1
       database: awsdatacatalog
-      schema: dbt_der
+      schema: dbt_der_raw
       aws_profile_name: default
       threads: 1
       num_retries: 0

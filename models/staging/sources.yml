@@ -4,7 +4,9 @@ sources:
   - name: raw
     schema: dbt_der_raw  #complete name (not got from profile)
     tables:
-      - name: incidents
+      - name: raw_incidents
       - name: raw_dim_highway
+      - name: raw_dim_calend
+      - name: raw_dim_holidays
 
 

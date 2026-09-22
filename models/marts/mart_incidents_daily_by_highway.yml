@@ -1,0 +1,77 @@
+models:
+  - name: mart_incidents_daily_by_highway
+    description: "Daily timeline of incident counts per highway, spanning the full 
+                  date range of incident data. Built as a spine (calendar × highway) 
+                  left joined with aggregated incidents, so every day/highway 
+                  combination appears even with zero incidents. Full-refresh table 
+                  (not incremental), partitioned by year_ref."
+    columns:
+      - name: highway_id
+        description: "Surrogate key of the highway segment."
+        data_tests:
+          - not_null
+
+      - name: highway_code
+        description: "Highway code (e.g. rodovia identifier)."
+
+      - name: highway_name_normalized
+        description: "Normalized/display name of the highway."
+
+      - name: along_city
+        description: "City the highway segment runs along."
+
+      - name: is_urban
+        description: "Flag indicating whether the segment is in an urban perimeter."
+
+      - name: date_ref
+        description: "Calendar date for this row (spine date)."
+        data_tests:
+          - not_null
+
+      - name: week_day
+        description: "Numeric day of week."
+
+      - name: week_day_name
+        description: "Day of week name."
+
+      - name: is_weekend
+        description: "Flag indicating whether date_ref falls on a weekend."
+
+      - name: year_ref
+        description: "Year of date_ref. Used as the partition column."
+        data_tests:
+          - not_null
+
+      - name: month_ref
+        description: "Month number of date_ref."
+
+      - name: month_name
+        description: "Month name of date_ref."
+
+      - name: year_day
+        description: "Day of year (1-366)."
+
+      - name: year_week
+        description: "Week number within the year."
+
+      - name: month_week
+        description: "Week number within the month."
+
+      - name: quarter_year
+        description: "Quarter of the year."
+
+      - name: fl_holiday
+        description: "Flag indicating whether date_ref is a holiday ('1' = Yes, '0' = No)."
+        data_tests:
+          - not_null
+
+      - name: holiday_description
+        description: "Description of the holiday. Null when fl_holiday = 0."
+        data_tests:
+          - dbt_utils.expression_is_true:
+              expression: "(fl_holiday = 1 and holiday_description is not null) or (fl_holiday = 0 and holiday_description is null)"
+
+      - name: qty_incident_count
+        description: "Number of incidents for this highway on this date. Zero when no incidents occurred."
+        data_tests:
+          - not_null

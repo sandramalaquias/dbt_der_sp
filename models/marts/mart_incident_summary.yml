@@ -1,0 +1,58 @@
+version: 2
+
+models:
+  - name: mart_incident_summary
+    description: >
+      Summary KPI table with cumulative statistics over the entire available
+      history of incidents recorded on São Paulo state highways. Single-row
+      table intended for headline metrics on a dashboard.
+    meta:
+      owner: "Sandra Malaquias"
+      maintained_by: "Data Engineering Team"
+      maintenance_cadence: "on demand"
+
+    columns:
+      - name: total_incidents
+        description: "Total number of incidents recorded across the entire history."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: avg_incidents_daily
+        description: >
+          Average number of incidents per calendar day, calculated as
+          total_incidents divided by the number of days between the first
+          and last recorded incident (inclusive).
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: total_impacted_segments
+        description: "Number of distinct highway segments that recorded at least one incident."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
+
+      - name: avg_incidents_per_segment
+        description: "Average number of incidents per impacted highway segment."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: total_impacted_cities
+        description: "Number of distinct cities that recorded at least one incident."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
+
+      - name: avg_incidents_per_city
+        description: "Average number of incidents per impacted city."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"

@@ -4,6 +4,12 @@ dbt_packages/
 logs/
 *.pyc
 .env
-files/*.csv
-files/*.parquet
 .idea/
+metabase/data/
+
+# Support files, all regenerable by scripts/get_*.py — except calend.xlsx,
+# which is a hand-built input that get_calend.py reads rather than downloads.
+# Keeping it tracked also makes files/ exist on a fresh clone, which the
+# scripts require since none of them creates the directory.
+files/*
+!files/calend.xlsx

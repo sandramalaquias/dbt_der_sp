@@ -1,0 +1,29 @@
+models:
+  - name: dim_incident_type
+    description: "Dimension table for incident types, incrementally built from staging incidents. 
+                  New types are assigned sequential IDs continuing from the last known ID."
+    meta:
+      owner: "Sandra Malaquias"
+      maintained_by: "Data Engineering Team"
+      maintenance_cadence: "on demand"
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - incident_type
+            - incident_category
+    columns:
+      - name: incident_type_id
+        description: "Surrogate key for the incident type, sequentially assigned, following combination of columns type and category"
+        data_tests:
+          - not_null
+          - unique
+
+      - name: incident_type
+        description: "Type of the incident (resumed description)"
+        data_tests:
+          - not_null
+
+      - name: incident_category
+        description: "Description of the type incident (broader classification)"
+        data_tests:
+          - not_null
